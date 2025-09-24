@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College AI Timetable Creator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 70vh;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 2px solid #e9ecef;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .subject-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .subject-item:hover {
+            border-color: #4facfe;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .subject-info {
+            flex-grow: 1;
+        }
+
+        .subject-name {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 4px;
+        }
+
+        .subject-details {
+            font-size: 12px;
+            color: #868e96;
+        }
+
+        .timetable-area {
+            flex-grow: 1;
+            padding: 30px;
+            background: white;
+        }
+
+        .timetable-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .timetable {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .timetable th {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .timetable td {
+            border: 1px solid #e9ecef;
+            padding: 12px 8px;
+            text-align: center;
+            height: 60px;
+            vertical-align: middle;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timetable td:hover {
+            background: rgba(79, 172, 254, 0.1);
+        }
+
+        .time-slot {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .subject-cell {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #495057;
+            font-weight: 600;
+            font-size: 12px;
+            border-radius: 4px;
+            border: 2px solid transparent;
+        }
+
+        .subject-cell:hover {
+            border-color: #4facfe;
+        }
+
+        .empty-cell {
+            background: #f8f9fa;
+            color: #adb5bd;
+            font-style: italic;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 50px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .container {
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 AI Timetable Creator</h1>
+            <p>Smart scheduling for modern education</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="form-section">
+                    <h3>📚 Course Details</h3>
+                    <div class="form-group">
+                        <label for="courseName">Course Name</label>
+                        <input type="text" id="courseName" placeholder="e.g., Computer Science">
+                    </div>
+                    <div class="form-group">
+                        <label for="semester">Semester</label>
+                        <select id="semester">
+                            <option value="">Select Semester</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>📖 Add Subject</h3>
+                    <div class="form-group">
+                        <label for="subjectName">Subject Name</label>
+                        <input type="text" id="subjectName" placeholder="e.g., Data Structures">
+                    </div>
+                    <div class="form-group">
+                        <label for="instructor">Instructor</label>
+                        <input type="text" id="instructor" placeholder="e.g., Dr. Smith">
+                    </div>
+                    <div class="form-group">
+                        <label for="hoursPerWeek">Hours per Week</label>
+                        <input type="number" id="hoursPerWeek" min="1" max="10" placeholder="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="subjectType">Subject Type</label>
+                        <select id="subjectType">
+                            <option value="theory">Theory</option>
+                            <option value="practical">Practical</option>
+                            <option value="tutorial">Tutorial</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="addSubject()">Add Subject</button>
+                </div>
+
+                <div class="form-section">
+                    <h3>📋 Subjects List</h3>
+                    <div id="subjectsList"></div>
+                </div>
+
+                <div class="form-section">
+                    <button class="btn btn-secondary" onclick="generateTimetable()">🤖 Generate AI Timetable</button>
+                    <button class="btn btn-danger" onclick="clearAll()">🗑️ Clear All</button>
+                </div>
+            </div>
+
+            <div class="timetable-area">
+                <div class="timetable-header">
+                    <h2>📅 Weekly Timetable</h2>
+                    <button class="btn" onclick="exportTimetable()">📤 Export</button>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>AI is creating your optimal timetable...</p>
+                </div>
+
+                <table class="timetable" id="timetable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                            <th>Saturday</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timetableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let subjects = [];
+        let timetableData = {};
+        
+        const timeSlots = [
+            '09:00-10:00',
+            '10:00-11:00',
+            '11:00-12:00',
+            '12:00-13:00',
+            '13:00-14:00',
+            '14:00-15:00',
+            '15:00-16:00',
+            '16:00-17:00'
+        ];
+        
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        
+        function initializeTimetable() {
+            const tbody = document.getElementById('timetableBody');
+            tbody.innerHTML = '';
+            
+            timeSlots.forEach(timeSlot => {
+                const row = document.createElement('tr');
+
+                const timeCell = document.createElement('td');
+                timeCell.className = 'time-slot';
+                timeCell.textContent = timeSlot;
+                row.appendChild(timeCell);
+                
+                days.forEach(day => {
+                    const cell = document.createElement('td');
+                    cell.className = 'empty-cell';
+                    cell.textContent = 'Free';
+                    cell.onclick = () => openSlotEditor(day, timeSlot);
+                    row.appendChild(cell);
+                });
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        function addSubject() {
+            const subjectName = document.getElementById('subjectName').value.trim();
+            const instructor = document.getElementById('instructor').value.trim();
+            const hoursPerWeek = parseInt(document.getElementById('hoursPerWeek').value);
+            const subjectType = document.getElementById('subjectType').value;
+            
+            if (!subjectName || !instructor || !hoursPerWeek) {
+                showNotification('Please fill all subject details', 'error');
+                return;
+            }
+            
+            const subject = {
+                id: Date.now(),
+                name: subjectName,
+                instructor,
+                hoursPerWeek,
+                type: subjectType
+            };
+            
+            subjects.push(subject);
+            updateSubjectsList();
+            clearSubjectForm();
+            showNotification('Subject added successfully', 'success');
+        }
+        
+        function updateSubjectsList() {
+            const list = document.getElementById('subjectsList');
+            list.innerHTML = '';
+            
+            subjects.forEach(subject => {
+                const item = document.createElement('div');
+                item.className = 'subject-item';
+                item.innerHTML = `
+                    <div class="subject-info">
+                        <div class="subject-name">${subject.name}</div>
+                        <div class="subject-details">
+                            ${subject.instructor} • ${subject.hoursPerWeek}h/week • ${subject.type}
+                        </div>
+                    </div>
+                    <button class="btn btn-danger" onclick="removeSubject(${subject.id})" style="padding: 8px 12px; font-size: 12px;">×</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        function removeSubject(id) {
+            subjects = subjects.filter(s => s.id !== id);
+            updateSubjectsList();
+            showNotification('Subject removed', 'success');
+        }
+        
+        function clearSubjectForm() {
+            document.getElementById('subjectName').value = '';
+            document.getElementById('instructor').value = '';
+            document.getElementById('hoursPerWeek').value = '';
+            document.getElementById('subjectType').value = 'theory';
+        }
+        
+        function generateTimetable() {
+            if (subjects.length === 0) {
+                showNotification('Please add subjects first', 'error');
+                return;
+            }
+            
+            const loading = document.getElementById('loading');
+            const timetable = document.getElementById('timetable');
+            
+            loading.style.display = 'block';
+            timetable.style.display = 'none';
+            setTimeout(() => {
+                const generatedSchedule = generateOptimalSchedule();
+                populateTimetable(generatedSchedule);
+                
+                loading.style.display = 'none';
+                timetable.style.display = 'table';
+                
+                showNotification('Timetable generated successfully!', 'success');
+            }, 2000);
+        }
+        
+        function generateOptimalSchedule() {
+            const schedule = {};
+            const availableSlots = [];
+            days.forEach(day => {
+                timeSlots.forEach(slot => {
+                    if (slot !== '12:00-13:00') { 
+                        availableSlots.push({ day, slot });
+                    }
+                });
+            });
+            availableSlots.sort(() => Math.random() - 0.5);
+            
+            let slotIndex = 0;
+            
+            subjects.forEach(subject => {
+                const slotsNeeded = subject.hoursPerWeek;
+                
+                for (let i = 0; i < slotsNeeded && slotIndex < availableSlots.length; i++) {
+                    const { day, slot } = availableSlots[slotIndex];
+                    
+                    if (!schedule[day]) schedule[day] = {};
+                    schedule[day][slot] = {
+                        subject: subject.name,
+                        instructor: subject.instructor,
+                        type: subject.type
+                    };
+                    
+                    slotIndex++;
+                }
+            });
+            
+            return schedule;
+        }
+        
+        function populateTimetable(schedule) {
+            const tbody = document.getElementById('timetableBody');
+            const rows = tbody.getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const timeSlot = timeSlots[i];
+                const cells = rows[i].getElementsByTagName('td');
+                
+                for (let j = 1; j < cells.length; j++) {
+                    const day = days[j - 1];
+                    const cell = cells[j];
+                    
+                    if (timeSlot === '12:00-13:00') {
+                        cell.className = 'empty-cell';
+                        cell.textContent = 'Lunch Break';
+                        cell.style.background = 'linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%)';
+                    } else if (schedule[day] && schedule[day][timeSlot]) {
+                        const slotData = schedule[day][timeSlot];
+                        cell.className = 'subject-cell';
+                        cell.innerHTML = `
+                            <strong>${slotData.subject}</strong><br>
+                            <small>${slotData.instructor}</small>
+                        `;
+                    } else {
+                        cell.className = 'empty-cell';
+                        cell.textContent = 'Free';
+                    }
+                }
+            }
+        }
+        
+        function openSlotEditor(day, timeSlot) {
+            if (timeSlot === '12:00-13:00') return; 
+            
+            const subjectOptions = subjects.map(s => 
+                `<option value="${s.name}">${s.name} - ${s.instructor}</option>`
+            ).join('');
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); z-index: 1000; display: flex;
+                justify-content: center; align-items: center;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 12px; min-width: 300px;">
+                    <h3>Edit ${day} ${timeSlot}</h3>
+                    <select id="modalSubject" style="width: 100%; padding: 10px; margin: 15px 0; border-radius: 6px; border: 2px solid #e9ecef;">
+                        <option value="">Select Subject</option>
+                        ${subjectOptions}
+                    </select>
+                    <div style="text-align: right; margin-top: 20px;">
+                        <button onclick="this.closest('div').parentElement.remove()" style="margin-right: 10px; padding: 8px 16px; border: 2px solid #ddd; background: white; border-radius: 6px; cursor: pointer;">Cancel</button>
+                        <button onclick="saveSlot('${day}', '${timeSlot}', document.getElementById('modalSubject').value); this.closest('div').parentElement.remove();" 
+                                style="padding: 8px 16px; background: #4facfe; color: white; border: none; border-radius: 6px; cursor: pointer;">Save</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function saveSlot(day, timeSlot, subjectName) {
+            const tbody = document.getElementById('timetableBody');
+            const rows = tbody.getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                if (timeSlots[i] === timeSlot) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    const dayIndex = days.indexOf(day);
+                    const cell = cells[dayIndex + 1];
+                    
+                    if (subjectName) {
+                        const subject = subjects.find(s => s.name === subjectName);
+                        cell.className = 'subject-cell';
+                        cell.innerHTML = `
+                            <strong>${subject.name}</strong><br>
+                            <small>${subject.instructor}</small>
+                        `;
+                    } else {
+                        cell.className = 'empty-cell';
+                        cell.textContent = 'Free';
+                    }
+                    break;
+                }
+            }
+            
+            showNotification('Slot updated successfully', 'success');
+        }
+        
+        function exportTimetable() {
+            const courseName = document.getElementById('courseName').value || 'Timetable';
+            const semester = document.getElementById('semester').value || 'N/A';
+            
+            let exportData = `${courseName} - Semester ${semester}\n`;
+            exportData += '='.repeat(50) + '\n\n';
+            
+            const tbody = document.getElementById('timetableBody');
+            const rows = tbody.getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                exportData += `${timeSlots[i]}: `;
+                
+                for (let j = 1; j < cells.length; j++) {
+                    const cellText = cells[j].textContent.replace(/\n/g, ' ');
+                    exportData += `${days[j-1]}: ${cellText} | `;
+                }
+                exportData += '\n';
+            }
+            const blob = new Blob([exportData], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${courseName}_timetable.txt`;
+            a.click();
+            
+            showNotification('Timetable exported successfully!', 'success');
+        }
+        
+        function clearAll() {
+            if (confirm('Are you sure you want to clear everything?')) {
+                subjects = [];
+                updateSubjectsList();
+                initializeTimetable();
+                document.getElementById('courseName').value = '';
+                document.getElementById('semester').value = '';
+                showNotification('All data cleared', 'success');
+            }
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        document.addEventListener('DOMContentLoaded', initializeTimetable);
+    </script>
+</body>
+</html>
